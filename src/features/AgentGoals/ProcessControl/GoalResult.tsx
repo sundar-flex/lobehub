@@ -81,15 +81,16 @@ const GoalResult = ({ graph, onSelect }: GoalResultProps) => {
           outcomes={data.outcomes}
           primaryResourceId={deliverable?.documentId}
         />
+        {/* The goal's own acceptance IS the criteria list above; every task's
+            acceptance follows it as the second group of the same section. */}
         <GoalCriteriaResults
           error={data.error}
           loading={data.isLoading}
           outcomes={data.outcomes}
           onRetry={data.retry}
-        />
-        {/* Every acceptance the Goal owns, under the criteria it was judged
-            against: the standard first, then which task held up to its own. */}
-        <GoalAcceptanceHierarchy tree={acceptanceTree} />
+        >
+          <GoalAcceptanceHierarchy tree={acceptanceTree} />
+        </GoalCriteriaResults>
         <GoalDecisionsMade graph={graph} />
         <GoalUnfinished graph={graph} outcomes={data.outcomes} onContinue={continueFromResult} />
       </Flexbox>
