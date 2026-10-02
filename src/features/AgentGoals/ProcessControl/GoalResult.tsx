@@ -2,13 +2,16 @@
 
 import { Flexbox, Markdown } from '@lobehub/ui';
 import { Divider, Skeleton } from '@lobehub/ui/base-ui';
+import { useMemo } from 'react';
 
 import { useEntityMarkdown } from '@/features/EntityLink';
 import { useClientDataSWR } from '@/libs/swr';
 import { portalKeys } from '@/libs/swr/keys';
 import { documentService } from '@/services/document';
 
+import GoalAcceptanceHierarchy from './GoalAcceptanceHierarchy';
 import { pickFinalDeliverable } from './goalAcceptanceReport';
+import { buildAcceptanceTree } from './goalAcceptanceTree';
 import GoalCriteriaResults from './GoalCriteriaResults';
 import type { GoalGraphView } from './goalGraphViewModel';
 import { GoalDecisionsMade, GoalUnfinished, useContinueFromResult } from './GoalResultFollowUps';
@@ -66,6 +69,7 @@ const GoalResult = ({ graph, onSelect }: GoalResultProps) => {
   const deliverable = pickFinalDeliverable(graph.artifacts, acceptanceNodeId);
   const data = useGoalResultData(graph);
   const continueFromResult = useContinueFromResult(graph, data.outcomes);
+  const acceptanceTree = useMemo(() => buildAcceptanceTree(graph), [graph]);
 
   return (
     <Flexbox gap={8}>
@@ -83,6 +87,9 @@ const GoalResult = ({ graph, onSelect }: GoalResultProps) => {
           outcomes={data.outcomes}
           onRetry={data.retry}
         />
+        {/* Every acceptance the Goal owns, under the criteria it was judged
+            against: the standard first, then which task held up to its own. */}
+        <GoalAcceptanceHierarchy tree={acceptanceTree} />
         <GoalDecisionsMade graph={graph} />
         <GoalUnfinished graph={graph} outcomes={data.outcomes} onContinue={continueFromResult} />
       </Flexbox>
