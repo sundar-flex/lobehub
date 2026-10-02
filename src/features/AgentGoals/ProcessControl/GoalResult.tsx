@@ -89,7 +89,11 @@ const GoalResult = ({ graph, onSelect }: GoalResultProps) => {
           outcomes={data.outcomes}
           onRetry={data.retry}
         >
-          <GoalAcceptanceHierarchy tree={acceptanceTree} />
+          <GoalAcceptanceHierarchy
+            canReview={data.canReview}
+            goalId={graph.goal.id}
+            tree={acceptanceTree}
+          />
         </GoalCriteriaResults>
         <GoalDecisionsMade graph={graph} />
         <GoalUnfinished graph={graph} outcomes={data.outcomes} onContinue={continueFromResult} />
