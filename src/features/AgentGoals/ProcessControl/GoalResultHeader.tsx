@@ -2,7 +2,7 @@
 
 import type { GoalGraphDecision } from '@lobechat/types';
 import { Flexbox, Icon, Markdown, Tooltip } from '@lobehub/ui';
-import { Button, confirmModal, Text, TextArea, toast } from '@lobehub/ui/base-ui';
+import { Button, confirmModal, Spin, Text, TextArea, toast } from '@lobehub/ui/base-ui';
 import { createStaticStyles, cssVar } from 'antd-style';
 import {
   ArrowRight,
@@ -21,6 +21,7 @@ import CollapsibleContent from '@/components/CollapsibleContent';
 import { usePermission } from '@/hooks/usePermission';
 import { verifyService } from '@/services/verify';
 import { useGoalStore } from '@/store/goal';
+import { shinyTextStyles } from '@/styles';
 
 import { formatSpan, formatUsd } from '../goalPresentation';
 import { coordinatorGateReason, coordinatorReasonCopy } from './coordinatorCopy';
@@ -33,8 +34,10 @@ import {
   findGoalAcceptanceGate,
   findOpenChangeRequest,
   type GoalAcceptanceGate,
+  goalResultHeadline,
   type GoalResultStatus,
   type GoalSignOffState,
+  isGoalReportOrganizing,
 } from './goalResultState';
 import { openRequestChangesModal } from './RequestChangesModal';
 import type { GoalResultData } from './useGoalResultData';
@@ -283,7 +286,8 @@ const GoalResultHeader = ({ data, graph, onContinue }: GoalResultHeaderProps) =>
     goalStatus: goal.status,
     unmetCriteria: outcomes.filter((outcome) => outcome.state === 'failed').length,
   });
-  const headline = graph.report?.latest?.metadata.headline;
+  const organizing = isGoalReportOrganizing(graph);
+  const headline = goalResultHeadline(graph);
 
   const scale = [
     outcomes.length > 0 && t('goalProcess.result.scale.criteria', { met, total: outcomes.length }),
@@ -305,10 +309,29 @@ const GoalResultHeader = ({ data, graph, onContinue }: GoalResultHeaderProps) =>
           {t(`goalProcess.result.status.${status}`)}
         </Text>
       </Flexbox>
-      {headline && (
-        <Text fontSize={20} style={{ lineHeight: 1.4 }} weight={600}>
-          {headline}
-        </Text>
+      {organizing ? (
+        // The next wrap-up is writing this result's title. `report.latest` is
+        // still the previous version, so naming it here put the old result on
+        // top of the rework. Say that this one is being organized instead, with
+        // the same pending animation the storyline section uses; the title
+        // swaps in by itself when the run completes.
+        <Flexbox horizontal align={'center'} gap={8} role={'status'}>
+          <Spin size={'small'} variant={'network'} />
+          <Text
+            className={shinyTextStyles.shinyText}
+            fontSize={20}
+            style={{ lineHeight: 1.4 }}
+            weight={600}
+          >
+            {t('goalProcess.result.headline.pending')}
+          </Text>
+        </Flexbox>
+      ) : (
+        headline && (
+          <Text fontSize={20} style={{ lineHeight: 1.4 }} weight={600}>
+            {headline}
+          </Text>
+        )
       )}
       {goal.requirement && (
         <Flexbox gap={4}>
